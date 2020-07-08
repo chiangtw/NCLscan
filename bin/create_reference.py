@@ -32,8 +32,9 @@ def create_reference_and_index(config):
     Run_with_args("cat {Reference_genome} | {SeqOut_bin} {NCLscan_ref_dir}/non_chrM.list 1 > {NCLscan_ref_dir}/ref_non_chrM.fa")
     Run_with_args("cat {NCLscan_ref_dir}/ref_non_chrM.fa {Protein_coding_transcripts} {lncRNA_transcripts} {NCLscan_ref_dir}/RepChrM.fa > {NCLscan_ref_dir}/AllRef.fa")
 
-    # Generate the index for bwa
-    Run_with_args("{bwa_bin} index {NCLscan_ref_dir}/AllRef.fa")
+    # Generate the index for STAR
+    Run_with_args("mkdir -p {NCLscan_ref_dir}/STAR_index")
+    Run_with_args("{star_bin} --runMode genomeGenerate --genomeDir {NCLscan_ref_dir}/STAR_index --genomeFastaFiles {NCLscan_ref_dir}/AllRef.fa --runThreadN {star_thread}")
     
     # Generate the index for novoalign
     Run_with_args("{novoindex_bin} {NCLscan_ref_dir}/AllRef.ndx {NCLscan_ref_dir}/AllRef.fa")

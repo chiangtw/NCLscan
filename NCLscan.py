@@ -23,24 +23,19 @@ def NCL_Scan1(config, datasets_list, output_dir):
 
     all_datasets = datasets_list.main_datasets.values() + datasets_list.support_datasets.values() # [Dataset_main_1, Dataset_support_1, Dataset_support_2, ...]
     for dataset in all_datasets:
-        # bwa mapping
-        config_options.update({"fastqs":' '.join(dataset.reads), "prefix":"{}/{}.{}".format(output_dir, dataset.name, dataset.dataset_type)})
-        Run_with_args("{bwa_bin} mem {bwa_options} {bwa_index} {fastqs} | {samtools_bin} view -Shb - > {prefix}.bwa.bam")
-
-        # get bwa unmapped
-        Run_with_args("{samtools_bin} view -F 2 -f 1 {prefix}.bwa.bam | tee {prefix}.bwa.unmapped.sam | cut -f '1' | sort | uniq > {prefix}.bwa.unmapped.sam.id")
-        bwa_unmapped_dataset = []
-        for idx, data in enumerate(dataset.reads):
-            if re.search("\.gz$", data):
-                cat = "zcat"
-            else:
-                cat = "cat"
-            config_options.update({"cat":cat, "fastq":data, "idx":idx+1})
-            Run_with_args("{cat} {fastq} | {FastqOut_bin} {prefix}.bwa.unmapped.sam.id 1 > {prefix}.bwa.unmapped_{idx}.fastq")
-            bwa_unmapped_dataset.append("{prefix}.bwa.unmapped_{idx}.fastq".format(**config_options))
+        # STAR mapping
+        config_options.update({"fastqs":' '.join(dataset.reads), "star_out":"{}/{}.{}.star_out".format(output_dir, dataset.name, dataset.dataset_type)})
+        Run_with_args("mkdir -p {star_out}")
+        Run_with_args(
+            "{star_bin} --genomeDir {NCLscan_ref_dir}/STAR_index --readFilesIn {fastqs} --runThreadN {star_thread}"
+            "--outFileNamePrefix {star_out} --outSAMtype BAM Unsorted --outSAMunmapped Within KeepPairs --outReadsUnmapped Fastx"
+        )
 
         # novoalign mapping
-        config_options.update({"unmapped_fastqs":' '.join(bwa_unmapped_dataset)})
+        config_options.update({
+            "unmapped_fastqs": "{star_out}/Unmapped.out.mate1 {star_out}/Unmapped.out.mate2".format(**config_options),
+            "prefix":"{}/{}.{}".format(output_dir, dataset.name, dataset.dataset_type)
+        })
         Run_with_args("{novoalign_bin} -r A 1 -n 30 -d {novoalign_index} -f {unmapped_fastqs} -o SAM > {prefix}.sam")
 
         # get novoalign unmapped
