@@ -17,63 +17,78 @@ ALL_TOOLS = \
 	RmRedundance \
 	SeqOut
 
+ALL_PY_TOOLS = \
+	Add_read_count.py \
+	AssembleJSeq.py \
+	append_Z3_tag.py \
+	create_reference.py \
+	get_gene_name.py \
+	mp_blat.py
 
-all: $(ALL_TOOLS)
+all: $(ALL_TOOLS) py_scripts
 
 
 AssembleExons: Common.o Table.o AssembleExons.o
-	g++ Common.o Table.o AssembleExons.o -o AssembleExons
+	$(CXX) Common.o Table.o AssembleExons.o -o AssembleExons
 
 AssembleFastq: Common.o Table.o Seq.o AssembleFastq.o
-	g++ Common.o Table.o Seq.o AssembleFastq.o -o AssembleFastq
+	$(CXX) Common.o Table.o Seq.o AssembleFastq.o -o AssembleFastq
 
 FastqOut: Common.o Table.o Seq.o Map.o FastqOut.o
-	g++ Common.o Table.o Seq.o Map.o FastqOut.o -o FastqOut
+	$(CXX) Common.o Table.o Seq.o Map.o FastqOut.o -o FastqOut
 
 GetInfo: Common.o Table.o Map.o GetInfo.o
-	g++ Common.o Table.o Map.o GetInfo.o -o GetInfo
+	$(CXX) Common.o Table.o Map.o GetInfo.o -o GetInfo
 
 GetKey: Common.o Table.o Map.o GetKey.o
-	g++ Common.o Table.o Map.o GetKey.o -o GetKey
+	$(CXX) Common.o Table.o Map.o GetKey.o -o GetKey
 
 GetNameB4Dot: Common.o Table.o GetNameB4Dot.o
-	g++ Common.o Table.o GetNameB4Dot.o -o GetNameB4Dot
+	$(CXX) Common.o Table.o GetNameB4Dot.o -o GetNameB4Dot
 
 InsertInList: Common.o Table.o Map.o InsertInList.o
-	g++ Common.o Table.o Map.o InsertInList.o -o InsertInList
+	$(CXX) Common.o Table.o Map.o InsertInList.o -o InsertInList
 
 JSFilter: Common.o Table.o Sam.o JSFilter.o
-	g++ Common.o Table.o Sam.o JSFilter.o -o JSFilter
+	$(CXX) Common.o Table.o Sam.o JSFilter.o -o JSFilter
 
 JSParser: Common.o Table.o Sam.o JSParser.o
-	g++ Common.o Table.o Sam.o JSParser.o -o JSParser
+	$(CXX) Common.o Table.o Sam.o JSParser.o -o JSParser
 
 JunctionSite2BED: Common.o Table.o Map.o Annotation.o JunctionSite2BED.o
-	g++ Common.o Table.o Map.o Annotation.o JunctionSite2BED.o -o JunctionSite2BED
+	$(CXX) Common.o Table.o Map.o Annotation.o JunctionSite2BED.o -o JunctionSite2BED
 
 PslChimeraFilter: Common.o Table.o PslChimeraFilter.o
-	g++ Common.o Table.o PslChimeraFilter.o -o PslChimeraFilter
+	$(CXX) Common.o Table.o PslChimeraFilter.o -o PslChimeraFilter
 
 RemoveInList: Common.o Table.o Map.o RemoveInList.o
-	g++ Common.o Table.o Map.o RemoveInList.o -o RemoveInList
+	$(CXX) Common.o Table.o Map.o RemoveInList.o -o RemoveInList
 
 RetainInList: Common.o Table.o Map.o RetainInList.o
-	g++ Common.o Table.o Map.o RetainInList.o -o RetainInList
+	$(CXX) Common.o Table.o Map.o RetainInList.o -o RetainInList
 
 RmBadMapping: Common.o Table.o RmBadMapping.o
-	g++ Common.o Table.o RmBadMapping.o -o RmBadMapping
+	$(CXX) Common.o Table.o RmBadMapping.o -o RmBadMapping
 
 RmColinearPairInSam: Common.o Table.o Sam.o RmColinearPairInSam.o
-	g++ Common.o Table.o Sam.o RmColinearPairInSam.o -o RmColinearPairInSam
+	$(CXX) Common.o Table.o Sam.o RmColinearPairInSam.o -o RmColinearPairInSam
 
 RmRedundance: Common.o Table.o Map.o RmRedundance.o
-	g++ Common.o Table.o Map.o RmRedundance.o -o RmRedundance
+	$(CXX) Common.o Table.o Map.o RmRedundance.o -o RmRedundance
 
 SeqOut: Common.o Table.o Seq.o Map.o SeqOut.o
-	g++ Common.o Table.o Seq.o Map.o SeqOut.o -o SeqOut
+	$(CXX) Common.o Table.o Seq.o Map.o SeqOut.o -o SeqOut
 
+py_scripts: $(ALL_PY_TOOLS)
+	@chmod +x $(ALL_PY_TOOLS)
+
+.PHONY: clean install uninstall
 
 clean:
-	rm -f *.o
-	rm -f $(ALL_TOOLS)
+	$(RM) *.o $(ALL_TOOLS)
 
+install:
+	install $(ALL_TOOLS) $(ALL_PY_TOOLS) $(PREFIX)
+
+uninstall:
+	cd $(PREFIX); $(RM) $(ALL_TOOLS) $(ALL_PY_TOOLS)
