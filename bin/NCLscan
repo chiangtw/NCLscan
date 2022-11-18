@@ -29,6 +29,7 @@ from __future__ import print_function
 import argparse
 import subprocess as sp
 import sys
+import os
 import os.path
 import tempfile as tp
 
@@ -92,8 +93,9 @@ class NCLscanVirtualConfig(object):
 
     @contextmanager
     def create_virtual_config(self):
-        with tp.NamedTemporaryFile(encoding='utf-8') as config_file:
+        with tp.NamedTemporaryFile() as config_file:
             config = configparser.ConfigParser()
+            config.optionxform = str
             config.add_section('NCLscan_config')
 
             for k, v in self.option_values.items():
@@ -126,6 +128,24 @@ class RefsConfig(object):
         return refs_dict
 
 
+def makedirs(dir_path, exist_ok=False):
+    if exist_ok:
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+    else:
+        os.makedirs(dir_path)
+
+
+def subprocess_run(cmd):
+    p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT)
+
+    # TODO: Use "logging" to print log messages!
+    # for line in p.stdout:
+    #     print(line, end='', file=sys.stderr)
+
+    p.wait()
+
+
 def index_mode(args):
 
     # create 'refs.cfg'
@@ -135,6 +155,7 @@ def index_mode(args):
         'pc_transcripts': os.path.abspath(args.pc_transcripts),
         'lnc_transcripts': os.path.abspath(args.lnc_transcripts),
     }
+    makedirs(args.ref_dir, exist_ok=True)
     ref_cfg = os.path.join(args.ref_dir, 'refs.cfg')
     RefsConfig.create(ref_cfg, refs_dict)
 
@@ -152,8 +173,7 @@ def index_mode(args):
 
     with config.create_virtual_config() as config:
         cmd = ['create_reference.py', '-c', config]
-        result = sp.run(cmd, stdout=sp.PIPE, stderr=sp.PIPE, encoding='utf-8')
-
+        result = subprocess_run(cmd)
         return result
 
 
@@ -182,7 +202,7 @@ def run_mode(args):
             '-o', args.out_dir,
         ]
 
-        result = sp.run(cmd, stdout=sp.PIPE, stderr=sp.PIPE, encoding='utf-8')
+        result = subprocess_run(cmd)
 
         return result
 
