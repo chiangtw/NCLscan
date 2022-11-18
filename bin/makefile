@@ -23,7 +23,8 @@ ALL_PY_TOOLS = \
 	append_Z3_tag.py \
 	create_reference.py \
 	get_gene_name.py \
-	mp_blat.py
+	mp_blat.py \
+	NCLscan
 
 all: $(ALL_TOOLS) py_scripts
 

@@ -1,0 +1,227 @@
+#! /usr/bin/env python
+
+"""
+# Create index
+## create indexes and "refs.cfg"
+
+NCLscan 
+    --index
+    -r/--ref_dir REF_DIR
+    -g/--genome GENOME
+    -a/--gtf GTF
+    -c/--pc_transcripts PC_TRANSCRIPTS
+    -l/--lnc_transcripts LNC_TRANSCRIPTS
+
+
+# Run
+
+NCLscan
+    -r/--ref_dir REF_DIR
+    -1 FASTQ_1(.gz)
+    -2 FASTQ_2(.gz)
+    -P/--name_prefix NAME_PREFIX
+    -o/--out_dir OUT_DIR
+    -t THREADS ("10" or "bwa=10,blat=4")
+"""
+
+from __future__ import print_function
+
+import argparse
+import subprocess as sp
+import sys
+import os.path
+import tempfile as tp
+
+if sys.version_info[0] == 2:
+    import ConfigParser as configparser
+else:
+    import configparser
+
+from contextlib import contextmanager
+
+
+class NCLscanVirtualConfig(object):
+    def __init__(self):
+        self.init_config()
+
+    def init_config(self):
+        self.option_values = {
+            'NCLscan_ref_dir': '',
+            'Reference_genome': '',
+            'Gene_annotation': '',
+            'Protein_coding_transcripts': '',
+            'lncRNA_transcripts': '',
+            'bedtools_bin': 'bedtools',
+            'blat_bin': 'blat',
+            'bwa_bin': 'bwa',
+            'samtools_bin': 'samtools',
+            'novoalign_bin': 'novoalign',
+            'novoindex_bin': 'novoindex',
+            'Add_read_count_bin': 'Add_read_count.py',
+            'AssembleExons_bin': 'AssembleExons',
+            'AssembleFastq_bin': 'AssembleFastq',
+            'AssembleJSeq_bin': 'AssembleJSeq.py',
+            'append_Z3_tag': 'append_Z3_tag.py',
+            'FastqOut_bin': 'FastqOut',
+            'get_gene_name_bin': 'get_gene_name.py',
+            'GetInfo_bin': 'GetInfo',
+            'GetKey_bin': 'GetKey',
+            'GetNameB4Dot_bin': 'GetNameB4Dot',
+            'InsertInList_bin': 'InsertInList',
+            'JSFilter_bin': 'JSFilter',
+            'JSParser_bin': 'JSParser',
+            'JunctionSite2BED_bin': 'JunctionSite2BED',
+            'mp_blat_bin': 'mp_blat.py',
+            'PslChimeraFilter_bin': 'PslChimeraFilter',
+            'RemoveInList_bin': 'RemoveInList',
+            'RetainInList_bin': 'RetainInList',
+            'RmBadMapping_bin': 'RmBadMapping',
+            'RmColinearPairInSam_bin': 'RmColinearPairInSam',
+            'RmRedundance_bin': 'RmRedundance',
+            'SeqOut_bin': 'SeqOut',
+            'max_read_len': '151',
+            'max_fragment_size': '500',
+            'quality_score': '20',
+            'span_range': '50',
+            'bwa-mem-t': '1',
+            'mp_blat_process': '1',
+        }
+
+    def update(self, other):
+        self.option_values.update(other)
+
+    @contextmanager
+    def create_virtual_config(self):
+        with tp.NamedTemporaryFile(encoding='utf-8') as config_file:
+            config = configparser.ConfigParser()
+            config.add_section('NCLscan_config')
+
+            for k, v in self.option_values.items():
+                config.set('NCLscan_config', k, v)
+
+            with open(config_file.name, 'w') as out:
+                config.write(out)
+
+            yield config_file.name
+
+
+class RefsConfig(object):
+
+    @staticmethod
+    def create(filename, refs_dict):
+        config = configparser.ConfigParser()
+        config.add_section('refs')
+
+        for k, v in refs_dict.items():
+            config.set('refs', k, v)
+
+        with open(filename, 'w') as out:
+            config.write(out)
+
+    @staticmethod
+    def load(filename):
+        config = configparser.ConfigParser()
+        config.read(filename)
+        refs_dict = dict(config.items('refs'))
+        return refs_dict
+
+
+def index_mode(args):
+
+    # create 'refs.cfg'
+    refs_dict = {
+        'genome': os.path.abspath(args.genome),
+        'gtf': os.path.abspath(args.gtf),
+        'pc_transcripts': os.path.abspath(args.pc_transcripts),
+        'lnc_transcripts': os.path.abspath(args.lnc_transcripts),
+    }
+    ref_cfg = os.path.join(args.ref_dir, 'refs.cfg')
+    RefsConfig.create(ref_cfg, refs_dict)
+
+    # create indexes for NCLscan
+    config = NCLscanVirtualConfig()
+    config.update(
+        {
+            'NCLscan_ref_dir': os.path.abspath(args.ref_dir),
+            'Reference_genome': refs_dict['genome'],
+            'Gene_annotation': refs_dict['gtf'],
+            'Protein_coding_transcripts': refs_dict['pc_transcripts'],
+            'lncRNA_transcripts': refs_dict['lnc_transcripts'],
+        }
+    )
+
+    with config.create_virtual_config() as config:
+        cmd = ['create_reference.py', '-c', config]
+        result = sp.run(cmd, stdout=sp.PIPE, stderr=sp.PIPE, encoding='utf-8')
+
+        return result
+
+
+def run_mode(args):
+    ref_cfg = os.path.join(args.ref_dir, 'refs.cfg')
+    refs_dict = RefsConfig.load(ref_cfg)
+
+    config = NCLscanVirtualConfig()
+    config.update(
+        {
+            'NCLscan_ref_dir': os.path.abspath(args.ref_dir),
+            'Reference_genome': refs_dict['genome'],
+            'Gene_annotation': refs_dict['gtf'],
+            'Protein_coding_transcripts': refs_dict['pc_transcripts'],
+            'lncRNA_transcripts': refs_dict['lnc_transcripts'],
+        }
+    )
+
+    with config.create_virtual_config() as config:
+        cmd = [
+            'NCLscan.py',
+            '-c', config,
+            '--fq1', args.fastq1,
+            '--fq2', args.fastq2,
+            '-pj', args.name_prefix,
+            '-o', args.out_dir,
+        ]
+
+        result = sp.run(cmd, stdout=sp.PIPE, stderr=sp.PIPE, encoding='utf-8')
+
+        return result
+
+
+def create_parser():
+
+    # TODO: Customize the help messages!
+
+    parser = argparse.ArgumentParser(add_help=False)
+    common_args = parser.add_argument_group('Common arguments')
+    common_args.add_argument('-h', '--help', action='help', help='show this help message and exit')
+    common_args.add_argument('-r', '--ref_dir')
+
+    index_mode = parser.add_argument_group('Index mode')
+    index_mode.add_argument('--index', action='store_true')
+    index_mode.add_argument('-g', '--genome')
+    index_mode.add_argument('-a', '--gtf')
+    index_mode.add_argument('-c', '--pc_transcripts')
+    index_mode.add_argument('-l', '--lnc_transcripts')
+
+    run_mode = parser.add_argument_group('Run mode')
+    run_mode.add_argument('-1', '--fastq1')
+    run_mode.add_argument('-2', '--fastq2')
+    run_mode.add_argument('-P', '--name_prefix')
+    run_mode.add_argument('-o', '--out_dir')
+    run_mode.add_argument('-t', '--threads')
+
+    return parser
+
+
+if __name__ == "__main__":
+    parser = create_parser()
+    args = parser.parse_args()
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        exit(1)
+
+    if args.index:
+        index_mode(args)
+    else:
+        run_mode(args)
