@@ -95,7 +95,7 @@ class NCLscanVirtualConfig(object):
 
     @contextmanager
     def create_virtual_config(self):
-        with tp.NamedTemporaryFile() as config_file:
+        with tp.NamedTemporaryFile(prefix='NCLscan') as config_file:
             config = configparser.ConfigParser()
             config.optionxform = str
             config.add_section('NCLscan_config')
@@ -225,26 +225,25 @@ def run_mode(args):
 
 def create_parser():
 
-    # TODO: Customize the help messages!
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest='mode', help='sub-commands')
 
-    parser = argparse.ArgumentParser(add_help=False)
-    common_args = parser.add_argument_group('Common arguments')
-    common_args.add_argument('-h', '--help', action='help', help='show this help message and exit')
-    common_args.add_argument('-r', '--ref_dir')
+    index_mode_parser = subparsers.add_parser('index', help='create index files for NCLscan')
+    index_mode_parser.add_argument('-r', '--ref_dir')
+    index_mode_parser.add_argument('-g', '--genome')
+    index_mode_parser.add_argument('-a', '--gtf')
+    index_mode_parser.add_argument('-c', '--pc_transcripts')
+    index_mode_parser.add_argument('-l', '--lnc_transcripts')
+    index_mode_parser.set_defaults(func=index_mode)
 
-    index_mode = parser.add_argument_group('Index mode')
-    index_mode.add_argument('--index', action='store_true')
-    index_mode.add_argument('-g', '--genome')
-    index_mode.add_argument('-a', '--gtf')
-    index_mode.add_argument('-c', '--pc_transcripts')
-    index_mode.add_argument('-l', '--lnc_transcripts')
-
-    run_mode = parser.add_argument_group('Run mode')
-    run_mode.add_argument('-1', '--fastq1')
-    run_mode.add_argument('-2', '--fastq2')
-    run_mode.add_argument('-P', '--name_prefix')
-    run_mode.add_argument('-o', '--out_dir')
-    run_mode.add_argument('-t', '--threads', help='e.g. 10 or \'bwa=10,blat=5\'')
+    run_mode_parser = subparsers.add_parser('run', help='run NCLscan')
+    run_mode_parser.add_argument('-r', '--ref_dir')
+    run_mode_parser.add_argument('-1', '--fastq1')
+    run_mode_parser.add_argument('-2', '--fastq2')
+    run_mode_parser.add_argument('-P', '--name_prefix')
+    run_mode_parser.add_argument('-o', '--out_dir')
+    run_mode_parser.add_argument('-t', '--threads', default=1, help='e.g. 10 or \'bwa=10,blat=5\'')
+    run_mode_parser.set_defaults(func=run_mode)
 
     return parser
 
@@ -252,12 +251,4 @@ def create_parser():
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
-
-    if len(sys.argv) == 1:
-        parser.print_help()
-        exit(1)
-
-    if args.index:
-        index_mode(args)
-    else:
-        run_mode(args)
+    args.func(args)
