@@ -32,6 +32,7 @@ import sys
 import os
 import os.path
 import tempfile as tp
+import re
 
 if sys.version_info[0] == 2:
     import ConfigParser as configparser
@@ -39,6 +40,7 @@ else:
     import configparser
 
 from contextlib import contextmanager
+from collections import defaultdict
 
 
 class NCLscanVirtualConfig(object):
@@ -177,9 +179,21 @@ def index_mode(args):
         return result
 
 
+def parse_threads(thread_str):
+    if '=' in thread_str:
+        thread_options = dict(re.findall(r'(\w+)\s*=\s*(\d+)', thread_str))
+    else:
+        thread_str = re.search(r'\s*(\d+)\s*', thread_str).group(1)
+        thread_options = defaultdict(lambda: thread_str)
+
+    return thread_options
+
+
 def run_mode(args):
     ref_cfg = os.path.join(args.ref_dir, 'refs.cfg')
     refs_dict = RefsConfig.load(ref_cfg)
+
+    thread_options = parse_threads(args.threads)
 
     config = NCLscanVirtualConfig()
     config.update(
@@ -189,6 +203,8 @@ def run_mode(args):
             'Gene_annotation': refs_dict['gtf'],
             'Protein_coding_transcripts': refs_dict['pc_transcripts'],
             'lncRNA_transcripts': refs_dict['lnc_transcripts'],
+            'bwa-mem-t': thread_options['bwa'],
+            'mp_blat_process': thread_options['blat'],
         }
     )
 
@@ -228,7 +244,7 @@ def create_parser():
     run_mode.add_argument('-2', '--fastq2')
     run_mode.add_argument('-P', '--name_prefix')
     run_mode.add_argument('-o', '--out_dir')
-    run_mode.add_argument('-t', '--threads')
+    run_mode.add_argument('-t', '--threads', help='e.g. 10 or \'bwa=10,blat=5\'')
 
     return parser
 
