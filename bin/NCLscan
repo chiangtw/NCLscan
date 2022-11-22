@@ -141,11 +141,14 @@ def makedirs(dir_path, exist_ok=False):
 def subprocess_run(cmd):
     p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT)
 
-    # TODO: Use "logging" to print log messages!
-    # for line in p.stdout:
-    #     print(line, end='', file=sys.stderr)
+    try:
+        for line in iter(p.stdout.readline, b''):
+            print(line, end='', file=sys.stderr)
 
-    p.wait()
+        p.wait()
+
+    finally:
+        p.terminate()
 
 
 def index_mode(args):
