@@ -4,6 +4,8 @@ import argparse
 import re
 import os
 import sys
+import subprocess as sp
+import shlex
 from collections import OrderedDict
 
 def create_reference_and_index(config):
@@ -44,7 +46,17 @@ def create_reference_and_index(config):
 
 def Run_cmd(args):
     def Run(cmd_str):
-        os.system(cmd_str.format(**args))
+        cmd = shlex.split(cmd_str.format(**args))
+        p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT)
+
+        try:
+            for line in iter(p.stdout.readline, b''):
+                print(line, end='', file=sys.stderr)
+
+            p.wait()
+        finally:
+            p.terminate()
+
     return Run
 
 

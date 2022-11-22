@@ -5,6 +5,7 @@ import sys
 import os
 import subprocess as sp
 import re
+import shlex
 from collections import OrderedDict
 
 def NCL_Scan1(config, datasets_list, output_dir):
@@ -266,7 +267,17 @@ See {PJ}.result.sam for the final alignment result.
 
 def Run_cmd(args):
     def Run(cmd_str):
-        os.system(cmd_str.format(**args))
+        cmd = shlex.split(cmd_str.format(**args))
+        p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT)
+
+        try:
+            for line in iter(p.stdout.readline, b''):
+                print(line, end='', file=sys.stderr)
+
+            p.wait()
+        finally:
+            p.terminate()
+
     return Run
 
 
