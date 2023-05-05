@@ -4,8 +4,7 @@
 # Create index
 ## create indexes and "refs.cfg"
 
-NCLscan 
-    --index
+NCLscan index
     -r/--ref_dir REF_DIR
     -g/--genome GENOME
     -a/--gtf GTF
@@ -15,7 +14,7 @@ NCLscan
 
 # Run
 
-NCLscan
+NCLscan run
     -r/--ref_dir REF_DIR
     -1 FASTQ_1(.gz)
     -2 FASTQ_2(.gz)
@@ -39,9 +38,14 @@ if sys.version_info[0] == 2:
 else:
     import configparser
 
+import logging
 from contextlib import contextmanager
 from collections import defaultdict
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] %(message)s'
+)
 
 class NCLscanVirtualConfig(object):
     def __init__(self):
@@ -152,6 +156,7 @@ def subprocess_run(cmd):
 
 
 def index_mode(args):
+    logging.info('test logging')
 
     # create 'refs.cfg'
     refs_dict = {
