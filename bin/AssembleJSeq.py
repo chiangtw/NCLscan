@@ -1,9 +1,12 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python
+
+from __future__ import print_function
 
 import argparse
 import os
 import sys
 import re
+
 
 def AssembleJSeq(jseq1_file, jseq2_file):
     jseq1 = get_ID_and_seq(jseq1_file)
@@ -19,21 +22,21 @@ def AssembleJSeq(jseq1_file, jseq2_file):
     jseq2_common_gp = groupby(lambda seq: seq[0], jseq2_common)
 
     if len(jseq1_common_gp) != len(jseq2_common_gp):
-        print >> sys.stderr, "Format Error!!"
-        sys.exit()
+        print("Format Error!!", file=sys.stderr)
+        sys.exit(1)
     else:
         for i in range(len(jseq1_common_gp)):
             idx = 0
             for seq1 in jseq1_common_gp[i]:
                 ID = seq1[0]
                 for seq2 in jseq2_common_gp[i]:
-                    print "{}.{}\t{}{}".format(ID, idx, seq1[1], seq2[1])
+                    print("{}.{}\t{}{}".format(ID, idx, seq1[1], seq2[1]))
                     idx += 1
 
 
 def get_ID_and_seq(jseq_file):
     with open(jseq_file) as jseq:
-        ID_and_seq = re.findall("^(.+)\.[35]p\.[0-9]+(?:\([+-]\))?\t(.+)$", jseq.read(), flags=re.M)
+        ID_and_seq = re.findall(r"^(.+)\.[35]p\.[0-9]+(?:\([+-]\))?\t(.+)$", jseq.read(), flags=re.M)
     return ID_and_seq
 
 

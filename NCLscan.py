@@ -1,11 +1,15 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python
+
+from __future__ import print_function
 
 import argparse
 import sys
 import os
+import os.path
 import subprocess as sp
 import re
 from collections import OrderedDict
+
 
 def NCL_Scan1(config, datasets_list, output_dir):
 
@@ -31,7 +35,7 @@ def NCL_Scan1(config, datasets_list, output_dir):
         Run_with_args("{samtools_bin} view -F 2 -f 1 {prefix}.bwa.bam | tee {prefix}.bwa.unmapped.sam | cut -f '1' | sort | uniq > {prefix}.bwa.unmapped.sam.id")
         bwa_unmapped_dataset = []
         for idx, data in enumerate(dataset.reads):
-            if re.search("\.gz$", data):
+            if data.endswith(".gz"):
                 cat = "zcat"
             else:
                 cat = "cat"
@@ -55,8 +59,6 @@ def NCL_Scan2(config, datasets_list, project_name, output_dir):
 
     '''
         # Find candidates from main datasets
-        
-        Future work: try to make blat 'multi-threading' (use subprocess)
     '''    
 
     config_options = config.options.copy()
@@ -256,12 +258,12 @@ def NCL_Scan4(config, datasets_list, project_name, output_dir):
     final_result = map(lambda field: field[1:7] + field[-3:] + field[-6:-3], final_tmp)
     write_TSV(final_result, "{prefix}.result".format(**config_options))
 
-    print """
+    print("""
 
 The result will be written to {PJ}.result
 See {PJ}.result.sam for the final alignment result.
 
-""".format(PJ=project_name)
+""".format(PJ=project_name))
 
 
 def Run_cmd(args):
@@ -288,7 +290,7 @@ def write_TSV(result, out_file="result.txt", write_to_string=False):
     else:
         with open(out_file, 'w') as data_writer:
             for line in result:
-                print >> data_writer, '\t'.join(map(str, line))
+                print('\t'.join(map(str, line)), file=data_writer)
 
 
 def get_novoalign_version(novoalign_bin):
@@ -298,18 +300,19 @@ def get_novoalign_version(novoalign_bin):
         novoalign_version = m.group(1)
         return novoalign_version
 
+
 class NCLscanConfig(object):
     def __init__(self, config_text):
         self.parse_config(config_text)
 
     def parse_config(self, config_text):
-        format_options = re.sub("^ *(.*?)/? *$", "\g<1>", config_text, flags=re.M)
-        all_options = OrderedDict(re.findall("(^[^#\n][\w-]*) *= *(.*)", format_options, flags=re.M))
+        format_options = re.sub(r"^ *(.*?)/? *$", r"\g<1>", config_text, flags=re.M)
+        all_options = OrderedDict(re.findall(r"(^[^#\n][\w-]*) *= *(.*)", format_options, flags=re.M))
         for key, value in all_options.items():
 
             if value == "":
-                print >> sys.stderr, "Error: There is a key with empty value: {}".format(key)
-                exit(1)
+                print("Error: There is a key with empty value: {}".format(key), file=sys.stderr)
+                sys.exit(1)
 
             all_options[key] = value.format(**all_options)
         self.options = all_options
@@ -320,10 +323,10 @@ class NCLscanConfig(object):
             self.options['novoalign_bin'] = self.options['novoalign_bin'] + ' --pechimera off'
 
         # parse bwa options
-        bwa_option_keys = filter(lambda key: re.match("^bwa-mem", key), self.options.keys())
+        bwa_option_keys = filter(lambda key: re.match(r"^bwa-mem", key), self.options.keys())
         bwa_options = []
         for key in bwa_option_keys:
-            bwa_options += [re.sub("^bwa-mem", "", key), self.options[key]]
+            bwa_options += [re.sub(r"^bwa-mem", "", key), self.options[key]]
         self.options["bwa_options"] = ' '.join(bwa_options)
 
         # bwa index
@@ -359,14 +362,14 @@ class DatasetsList(object):
         self.parse_datasets_list(datasets_list)
 
     def parse_datasets_list(self, datasets_list):
-        remove_head_tail_blanks = re.sub("^ *(.*?) *$", "\g<1>", datasets_list, flags=re.M)
-        non_comment_lines = re.findall("(^[^#\n].*)", remove_head_tail_blanks, flags=re.M)
+        remove_head_tail_blanks = re.sub(r"^ *(.*?) *$", r"\g<1>", datasets_list, flags=re.M)
+        non_comment_lines = re.findall(r"(^[^#\n].*)", remove_head_tail_blanks, flags=re.M)
 
         tmp = []
         dataset_type = None
         dataset_name = None
         for line in non_comment_lines:
-            dataset_info = re.search("\[ *(\w+) *\. *(\w+) *\]", line)
+            dataset_info = re.search(r"\[ *(\w+) *\. *(\w+) *\]", line)
             if dataset_info:
                 if tmp != []:
                     if len(tmp) == 2:
@@ -397,7 +400,7 @@ class DatasetsList(object):
         
         if len(self.main_datasets) == 0:
             # report error: No main dataset!
-            print >> sys.stderr, "There are no main datasets assigned."
+            print("There are no main datasets assigned.", file=sys.stderr)
             sys.exit(1)
 
         
@@ -421,17 +424,17 @@ if __name__ == "__main__":
     # check if each argument has a value.
     too_few_args = False
     if args.config == None:
-        print >> sys.stderr, "Need the config file!"
+        print("Need the config file!", file=sys.stderr)
         too_few_args = True
     if (args.fq1 == None) or (args.fq2 == None):
     #[Support]if (args.datasets_list == None) and ((args.fq1 == None) or (args.fq2 == None)):
-        print >> sys.stderr, "Need to assign the input dataset!"
+        print("Need to assign the input dataset!", file=sys.stderr)
         too_few_args = True
     if args.project_name == None:
-        print >> sys.stderr, "Need to assign the project name!"
+        print("Need to assign the project name!", file=sys.stderr)
         too_few_args = True
     if args.output_dir == None:
-        print >> sys.stderr, "Need to assign the output dir!"
+        print("Need to assign the output dir!", file=sys.stderr)
         too_few_args = True
     if too_few_args:
         parser.print_usage()
@@ -452,7 +455,8 @@ if __name__ == "__main__":
     datasets_list = DatasetsList(datasets_list_text)
 
 
-    os.system("mkdir -p {}".format(args.output_dir))
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
 
     NCL_Scan1(config, datasets_list, args.output_dir)
     NCL_Scan2(config, datasets_list, args.project_name, args.output_dir)

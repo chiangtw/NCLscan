@@ -1,4 +1,6 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python
+
+from __future__ import print_function
 
 import argparse
 import sys
@@ -43,7 +45,7 @@ def add_read_count(result_tmp_file, result_sam_file, output_file, JSParser_bin='
 def get_read_with_ref(sam_data):
     read_with_ref = {}
     for line in sam_data:
-        ref_id = re.sub("\.[0-9]*$", "", line[2])
+        ref_id = re.sub(r"\.[0-9]*$", "", line[2])
         read_id = line[0]
         if ref_id in read_with_ref:
             if read_id not in read_with_ref[ref_id]:
@@ -86,7 +88,7 @@ def write_TSV(result, out_file="result.txt", write_to_string=False):
     else:
         with open(out_file, 'w') as data_writer:
             for line in result:
-                print >> data_writer, '\t'.join(map(str, line))
+                print('\t'.join(map(str, line)), file=data_writer)
 
 
 def retain_wanted(origin_data, wanted_list):

@@ -1,10 +1,13 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python
+
+from __future__ import print_function
 
 import argparse
 import re
 import os
 import sys
 from collections import OrderedDict
+
 
 def create_reference_and_index(config):
     '''
@@ -53,13 +56,13 @@ class NCLscanConfig(object):
         self.parse_config(config_text)
 
     def parse_config(self, config_text):
-        format_options = re.sub("^ *(.*?)/? *$", "\g<1>", config_text, flags=re.M)
-        all_options = OrderedDict(re.findall("(^[^#\n][\w-]*) *= *(.*)", format_options, flags=re.M))
+        format_options = re.sub(r"^ *(.*?)/? *$", r"\g<1>", config_text, flags=re.M)
+        all_options = OrderedDict(re.findall(r"(^[^#\n][\w-]*) *= *(.*)", format_options, flags=re.M))
         for key, value in all_options.items():
 
             if value == "":
-                print >> sys.stderr, "Error: There is a key with empty value: {}".format(key)
-                exit(1)
+                print("Error: There is a key with empty value: {}".format(key), file=sys.stderr)
+                sys.exit(1)
 
             all_options[key] = value.format(**all_options)
         self.options = all_options

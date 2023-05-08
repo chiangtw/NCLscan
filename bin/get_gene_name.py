@@ -1,8 +1,11 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python
+
+from __future__ import print_function
 
 import re
 import sys
 import argparse
+
 
 def add_gene_name(result_tmp_file, anno_file, output_file):
     result_tmp_data = read_TSV(result_tmp_file)
@@ -55,8 +58,8 @@ def get_gene_name_dict(anno_file):
     del anno_raw_data
 
     chrm_exon_gene_data_sep = \
-        map(lambda line: (line[0], line[1], line[3]), chrm_exon_gene_data) + \
-        map(lambda line: (line[0], line[2], line[3]), chrm_exon_gene_data)
+        list(map(lambda line: (line[0], line[1], line[3]), chrm_exon_gene_data)) + \
+        list(map(lambda line: (line[0], line[2], line[3]), chrm_exon_gene_data))
 
     chrm_exon_gene_data_sep = list(set(chrm_exon_gene_data_sep))
 
@@ -91,7 +94,7 @@ def write_TSV(result, out_file="result.txt", write_to_string=False):
     else:
         with open(out_file, 'w') as data_writer:
             for line in result:
-                print >> data_writer, '\t'.join(map(str, line))
+                print('\t'.join(map(str, line)), file=data_writer)
 
 
 
