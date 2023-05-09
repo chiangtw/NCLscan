@@ -268,7 +268,7 @@ See {PJ}.result.sam for the final alignment result.
 
 def Run_cmd(args):
     def Run(cmd_str):
-        os.system(cmd_str.format(**args))
+        sp.check_call(cmd_str.format(**args), shell=True)
     return Run
 
 

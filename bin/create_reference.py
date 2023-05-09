@@ -6,6 +6,7 @@ import argparse
 import re
 import os
 import sys
+import subprocess as sp
 from collections import OrderedDict
 
 
@@ -47,7 +48,7 @@ def create_reference_and_index(config):
 
 def Run_cmd(args):
     def Run(cmd_str):
-        os.system(cmd_str.format(**args))
+        sp.check_call(cmd_str.format(**args), shell=True)
     return Run
 
 
