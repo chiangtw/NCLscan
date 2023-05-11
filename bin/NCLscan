@@ -4,8 +4,7 @@
 # Create index
 ## create indexes and "refs.cfg"
 
-NCLscan 
-    --index
+NCLscan index
     -r/--ref_dir REF_DIR
     -g/--genome GENOME
     -a/--gtf GTF
@@ -15,13 +14,17 @@ NCLscan
 
 # Run
 
-NCLscan
+NCLscan run
     -r/--ref_dir REF_DIR
     -1 FASTQ_1(.gz)
     -2 FASTQ_2(.gz)
     -P/--name_prefix NAME_PREFIX
     -o/--out_dir OUT_DIR
     -t THREADS ("10" or "bwa=10,blat=4")
+    --max_read_len MAX_READ_LEN
+    --max_fragment_size MAX_FRAGMENT_SIZE
+    --quality_score QUALITY_SCORE
+    --span_range SPAN_RANGE
 """
 
 from __future__ import print_function
@@ -139,16 +142,7 @@ def makedirs(dir_path, exist_ok=False):
 
 
 def subprocess_run(cmd):
-    p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT)
-
-    try:
-        for line in iter(p.stdout.readline, b''):
-            print(line, end='', file=sys.stderr)
-
-        p.wait()
-
-    finally:
-        p.terminate()
+    sp.check_call(cmd)
 
 
 def index_mode(args):
@@ -208,6 +202,10 @@ def run_mode(args):
             'lncRNA_transcripts': refs_dict['lnc_transcripts'],
             'bwa-mem-t': thread_options['bwa'],
             'mp_blat_process': thread_options['blat'],
+            'max_read_len': str(args.max_read_len),
+            'max_fragment_size': str(args.max_fragment_size),
+            'quality_score': str(args.quality_score),
+            'span_range': str(args.span_range),
         }
     )
 
@@ -239,13 +237,30 @@ def create_parser():
     index_mode_parser.add_argument('-l', '--lnc_transcripts')
     index_mode_parser.set_defaults(func=index_mode)
 
-    run_mode_parser = subparsers.add_parser('run', help='run NCLscan')
+    run_mode_parser = subparsers.add_parser('run', help='run NCLscan', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     run_mode_parser.add_argument('-r', '--ref_dir')
     run_mode_parser.add_argument('-1', '--fastq1')
     run_mode_parser.add_argument('-2', '--fastq2')
     run_mode_parser.add_argument('-P', '--name_prefix')
     run_mode_parser.add_argument('-o', '--out_dir')
     run_mode_parser.add_argument('-t', '--threads', default=1, help='e.g. 10 or \'bwa=10,blat=5\'')
+    run_mode_parser.add_argument('--max_read_len', type=int, default=151)
+    run_mode_parser.add_argument('--max_fragment_size', type=int, default=500,
+        help=(
+            'These two parameters indicate the maximal read length (L) and fragment size of '
+            'the used paired-end RNA-seq data (FASTQ files), where fragment size = 2L + insert size. '
+            'If L > 151, the users should change these two parameters to (L, 2L + insert size).'
+        )
+    )
+    run_mode_parser.add_argument('--quality_score', type=int, default=20,
+        help='The base quality threshold. The value should be a non-negative integer.'
+    )
+    run_mode_parser.add_argument('--span_range', type=int, default=50,
+        help=(
+            'The collection of the supporting reads must span the NCL junction boundary by the '
+            'setting size of span range on both sides of the junction site.'
+        )
+    )
     run_mode_parser.set_defaults(func=run_mode)
 
     return parser
