@@ -1,4 +1,6 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python
+
+from __future__ import print_function
 
 import argparse
 import subprocess as sp
@@ -9,18 +11,18 @@ import random
 import time
 import re
 
-def mp_blat(reference_file, fasta_file, output_file, num_of_process=1, tmp_path=".", blat_bin="./blat", blat_opt=""):
+def mp_blat(reference_file, fasta_file, output_file, num_of_process=1, tmp_path=".", blat_bin="blat", blat_opt=""):
 
-    blat_opt = re.findall("([^ ]+)", blat_opt)
+    blat_opt = re.findall(r"([^ ]+)", blat_opt)
 
     if num_of_process == 1:
         # do blat directly
-        sp.call([blat_bin, reference_file, fasta_file, output_file] + blat_opt)
+        sp.check_call([blat_bin, reference_file, fasta_file, output_file] + blat_opt)
     elif num_of_process > 1:
 
         # split file
 
-        print >> sys.stderr, "Start to split the input into {} part ... ".format(num_of_process)
+        print("Start to split the input into {} part ... ".format(num_of_process), file=sys.stderr)
         split_start = time.time()
 
         fasta_file_size = os.stat(fasta_file).st_size
@@ -89,12 +91,12 @@ def mp_blat(reference_file, fasta_file, output_file, num_of_process=1, tmp_path=
                 tmp_fa_files.append(tmp_file_name)
 
         split_stop = time.time()
-        print >> sys.stderr, "Time cost of split_file = {} sec".format(split_stop - split_start)
+        print("Time cost of split_file = {} sec".format(split_stop - split_start), file=sys.stderr)
 
 
         # multi-processing blat
 
-        print >> sys.stderr, "Start to do the mp_blat using {} processes ... ".format(num_of_process)
+        print("Start to do the mp_blat using {} processes ... ".format(num_of_process), file=sys.stderr)
         blat_start = time.time()
 
         tmp_res_files = []
@@ -110,10 +112,10 @@ def mp_blat(reference_file, fasta_file, output_file, num_of_process=1, tmp_path=
             p.wait()
 
         blat_stop = time.time()
-        print >> sys.stderr, "Time cost of mp_blat = {} sec".format(blat_stop - blat_start)
+        print("Time cost of mp_blat = {} sec".format(blat_stop - blat_start), file=sys.stderr)
 
         # merge results
-        print >> sys.stderr, "Merging results ... "
+        print("Merging results ... ", file=sys.stderr)
         merge_start = time.time()
 
         with open(output_file, 'w') as output:
@@ -131,7 +133,7 @@ def mp_blat(reference_file, fasta_file, output_file, num_of_process=1, tmp_path=
                 res_file.close()
 
         merge_stop = time.time()
-        print >> sys.stderr, "Time cost of merge_result = {} sec".format(merge_stop - merge_start)
+        print("Time cost of merge_result = {} sec".format(merge_stop - merge_start), file=sys.stderr)
 
         # clean tmp files and dir
         shutil.rmtree(tmp_dir)
@@ -151,5 +153,5 @@ if __name__ == "__main__":
     start = time.time()
     mp_blat(args.reference, args.fasta, args.output, args.process, args.tmp_path, args.blat_bin, args.blat_opt)
     stop = time.time()
-    print "Total time cost = {} sec".format(stop - start)
+    print("Total time cost = {} sec".format(stop - start))
 
