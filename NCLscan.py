@@ -294,7 +294,11 @@ def write_TSV(result, out_file="result.txt", write_to_string=False):
 
 
 def get_novoalign_version(novoalign_bin):
-    log_msg = sp.check_output([novoalign_bin])
+    if sys.version_info[0] == 2:
+        log_msg = sp.check_output([novoalign_bin])
+    else:
+        log_msg = sp.check_output([novoalign_bin], encoding='utf-8')
+
     m = re.search(r'Novoalign V([0-9]+).[0-9]+.[0-9]+', log_msg)
     if m:
         novoalign_version = m.group(1)
