@@ -25,7 +25,7 @@ def NCL_Scan1(config, datasets_list, output_dir):
     config_options = config.options.copy()
     Run_with_args = Run_cmd(config_options)
 
-    all_datasets = datasets_list.main_datasets.values() + datasets_list.support_datasets.values() # [Dataset_main_1, Dataset_support_1, Dataset_support_2, ...]
+    all_datasets = list(datasets_list.main_datasets.values()) + list(datasets_list.support_datasets.values()) # [Dataset_main_1, Dataset_support_1, Dataset_support_2, ...]
     for dataset in all_datasets:
         # bwa mapping
         config_options.update({"fastqs":' '.join(dataset.reads), "prefix":"{}/{}.{}".format(output_dir, dataset.name, dataset.dataset_type)})
@@ -184,7 +184,7 @@ def NCL_Scan4(config, datasets_list, project_name, output_dir):
     config_options.update({"prefix":"{}/{}".format(output_dir, project_name), "prefix_all":"{}/all.{}".format(output_dir, project_name), "output_dir":output_dir})
     Run_with_args("{novoindex_bin} {prefix}.JS2.ndx {prefix}.JS2.fa")
 
-    all_datasets = datasets_list.main_datasets.values() + datasets_list.support_datasets.values()
+    all_datasets = list(datasets_list.main_datasets.values()) + list(datasets_list.support_datasets.values())
     JS2_files = []
     JSFilter_result_files = []
     for idx, dataset in enumerate(all_datasets):
