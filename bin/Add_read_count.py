@@ -57,10 +57,13 @@ def get_read_with_ref(sam_data):
 
 def get_junc_read(res_sam_data, JSParser_bin):
     ref_names = list(set(map(lambda line: line[2], res_sam_data)))
-    new_header = map(lambda ref_name: ["@SQ", "SN:%s"%ref_name, "LN:1000"], ref_names)
+    new_header = list(map(lambda ref_name: ["@SQ", "SN:%s"%ref_name, "LN:1000"], ref_names))
     re_headered_res_sam_data = new_header + res_sam_data
     
-    p1 = sp.Popen([JSParser_bin, "95", "10", "10"], stdin=sp.PIPE, stdout=sp.PIPE)
+    if sys.version_info[0] == 2:
+        p1 = sp.Popen([JSParser_bin, "95", "10", "10"], stdin=sp.PIPE, stdout=sp.PIPE)
+    else:
+        p1 = sp.Popen([JSParser_bin, "95", "10", "10"], stdin=sp.PIPE, stdout=sp.PIPE, encoding='utf-8')
     
     tsv_result = write_TSV(re_headered_res_sam_data, write_to_string=True)
     JSParser_result = p1.communicate(tsv_result)[0]
@@ -88,7 +91,7 @@ def write_TSV(result, out_file="result.txt", write_to_string=False):
     else:
         with open(out_file, 'w') as data_writer:
             for line in result:
-                print('\t'.join(map(str, line)), file=data_writer)
+                print('\t'.join(list(map(str, line))), file=data_writer)
 
 
 def retain_wanted(origin_data, wanted_list):

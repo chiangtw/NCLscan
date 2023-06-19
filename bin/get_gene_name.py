@@ -94,7 +94,7 @@ def write_TSV(result, out_file="result.txt", write_to_string=False):
     else:
         with open(out_file, 'w') as data_writer:
             for line in result:
-                print('\t'.join(map(str, line)), file=data_writer)
+                print('\t'.join(list(map(str, line))), file=data_writer)
 
 
 
