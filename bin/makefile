@@ -1,5 +1,4 @@
 ALL_TOOLS = \
-	AssembleExons \
 	AssembleFastq \
 	FastqOut \
 	GetInfo \
@@ -19,6 +18,7 @@ ALL_TOOLS = \
 
 ALL_PY_TOOLS = \
 	Add_read_count.py \
+	AssembleExons.py \
 	AssembleJSeq.py \
 	append_Z3_tag.py \
 	create_reference.py \
@@ -29,9 +29,6 @@ ALL_PY_TOOLS = \
 
 all: $(ALL_TOOLS) py_scripts
 
-
-AssembleExons: Common.o Table.o AssembleExons.o
-	$(CXX) Common.o Table.o AssembleExons.o -o AssembleExons
 
 AssembleFastq: Common.o Table.o Seq.o AssembleFastq.o
 	$(CXX) Common.o Table.o Seq.o AssembleFastq.o -o AssembleFastq

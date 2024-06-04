@@ -64,7 +64,7 @@ class NCLscanVirtualConfig(object):
             'novoalign_bin': 'novoalign',
             'novoindex_bin': 'novoindex',
             'Add_read_count_bin': 'Add_read_count.py',
-            'AssembleExons_bin': 'AssembleExons',
+            'AssembleExons_bin': 'AssembleExons.py',
             'AssembleFastq_bin': 'AssembleFastq',
             'AssembleJSeq_bin': 'AssembleJSeq.py',
             'append_Z3_tag': 'append_Z3_tag.py',
