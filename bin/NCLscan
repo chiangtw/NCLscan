@@ -84,6 +84,7 @@ class NCLscanVirtualConfig(object):
             'RmBadMapping_bin': 'RmBadMapping',
             'RmColinearPairInSam_bin': 'RmColinearPairInSam',
             'RmRedundance_bin': 'RmRedundance',
+            'recover_bed_name': 'recover_bed_name.py',
             'SeqOut_bin': 'SeqOut',
             'max_read_len': '151',
             'max_fragment_size': '500',

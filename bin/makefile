@@ -24,6 +24,7 @@ ALL_PY_TOOLS = \
 	create_reference.py \
 	get_gene_name.py \
 	mp_blat.py \
+	recover_bed_name.py \
 	NCLscan
 
 all: $(ALL_TOOLS) py_scripts

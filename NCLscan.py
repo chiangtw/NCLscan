@@ -99,7 +99,7 @@ def NCL_Scan2(config, datasets_list, project_name, output_dir):
     Run_with_args("{AssembleJSeq_bin} {prefix}.JS.info_1 {prefix}.JS.info_2 > {prefix}.JS.info")
     Run_with_args("cat {prefix}.JS.info | {RmRedundance_bin} 2 > {prefix}.JS.cleaned.info")
 
-    Run_with_args("{bedtools_bin} getfasta -fi {Reference_genome} -bed {prefix}.preJS.bed -tab -name -s -fo {prefix}.preJS.seq")
+    Run_with_args("{bedtools_bin} getfasta -fi {Reference_genome} -bed {prefix}.preJS.bed -tab -name -s | {recover_bed_name} > {prefix}.preJS.seq")
     Run_with_args("cat {prefix}.preJS.seq | {AssembleExons_bin} > {prefix}.preJS.seq2")
     Run_with_args("cat {prefix}.preJS.seq2 | grep \".5p.\" > {prefix}.JS.seq_1")
     Run_with_args("cat {prefix}.preJS.seq2 | grep \".3p.\" > {prefix}.JS.seq_2")
@@ -165,7 +165,7 @@ def NCL_Scan3(config, datasets_list, project_name, output_dir):
     Run_with_args("cat {prefix}.info | awk '{{print $1 \"\\t\" $2 \"-\" $3 $4 \":\" $5 \"-\" $6 $7 \":\" $8}}' > {prefix}.JS1.preIdx")
     Run_with_args("cat {prefix}.JS1.preIdx | sed 's/\\.[0-9]*\\t/\\t/g' | {RmRedundance_bin} 1 > {prefix}.JS1.Idx")
     Run_with_args("cat {prefix}.JS2.preIdx | {RetainInList_bin} 2 {prefix}.JS1.Idx 2 > {prefix}.JS2.Idx")
-    Run_with_args("{bedtools_bin} getfasta -fi {Reference_genome} -bed {prefix}.PreJS2.bed -tab -name -s -fo {prefix}.PreJS2.seq")
+    Run_with_args("{bedtools_bin} getfasta -fi {Reference_genome} -bed {prefix}.PreJS2.bed -tab -name -s | {recover_bed_name} > {prefix}.PreJS2.seq")
     Run_with_args("cat {prefix}.PreJS2.seq | {AssembleExons_bin} > {prefix}.PreJS2.seq2")
     Run_with_args("cat {prefix}.PreJS2.seq2 | grep \".5p.\" > {prefix}.JS2.seq_1")
     Run_with_args("cat {prefix}.PreJS2.seq2 | grep \".3p.\" > {prefix}.JS2.seq_2")
