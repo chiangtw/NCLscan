@@ -23,6 +23,7 @@ ALL_PY_TOOLS = \
 	append_Z3_tag.py \
 	create_reference.py \
 	get_gene_name.py \
+	get_readthrough.py \
 	mp_blat.py \
 	recover_bed_name.py \
 	NCLscan

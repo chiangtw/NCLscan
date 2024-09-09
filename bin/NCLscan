@@ -70,6 +70,7 @@ class NCLscanVirtualConfig(object):
             'append_Z3_tag': 'append_Z3_tag.py',
             'FastqOut_bin': 'FastqOut',
             'get_gene_name_bin': 'get_gene_name.py',
+            'get_readthrough_bin': 'get_readthrough.py',
             'GetInfo_bin': 'GetInfo',
             'GetKey_bin': 'GetKey',
             'GetNameB4Dot_bin': 'GetNameB4Dot',

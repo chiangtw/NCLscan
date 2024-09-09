@@ -252,9 +252,10 @@ def NCL_Scan4(config, datasets_list, project_name, output_dir):
 
     Run_with_args("{Add_read_count_bin} -tmp {prefix}.result.tmp -sam {prefix}.result.sam -o {prefix}.result.tmp2 --JSParser_bin {JSParser_bin}")
     Run_with_args("{get_gene_name_bin} -tmp {prefix}.result.tmp2 -g {Gene_annotation} -o {prefix}.result.tmp3")
+    Run_with_args("{get_readthrough_bin} -tmp {prefix}.result.tmp3 -o {prefix}.result.tmp4 -ro {prefix}.result.readthough")
 
     # get final result
-    final_tmp = read_TSV("{prefix}.result.tmp3".format(**config_options))
+    final_tmp = read_TSV("{prefix}.result.tmp4".format(**config_options))
     final_result = map(lambda field: field[1:7] + field[-3:] + field[-6:-3], final_tmp)
     write_TSV(final_result, "{prefix}.result".format(**config_options))
 
