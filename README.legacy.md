@@ -1,3 +1,12 @@
+> **Note (legacy documentation)**  
+> This file describes the original NCLscan interface based on `NCLscan.py` and an explicit configuration file. It is kept for users who need full control over the configuration or who have existing workflows built on the legacy interface.  
+> 
+> For installation, environment setup and the current recommended commands (`NCLscan index` / `NCLscan run` with Python 3), please refer to the main `README.md`. The new `NCLscan run` command internally calls the same pipeline described here, but generates a temporary configuration file automatically.
+>
+> Installation instructions and dependency versions in this file may be outdated. Please use the main `README.md` as the primary source for setup and environment configuration.
+
+
+
 ## Manual of NCLscan
 ###### Version: 1.7.0
 
