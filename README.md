@@ -3,11 +3,15 @@
 Accurate detection of non-co-linear (NCL) transcripts (fusion, trans-splicing, circRNA) from paired-end RNA-seq
 
 
-
-
 ## Overview
 
 NCLscan is a command-line pipeline for detecting **non-co-linear (NCL) transcripts** from paired-end RNA-seq data. NCL events include gene fusions, trans-splicing events and circular RNAs, where the exon order in the transcript does not follow the linear genomic order. The method was originally introduced in the context of human RNA-seq analysis to distinguish different types of NCL transcripts based on poly(A)+ and non-poly(A) RNA-seq data.
+
+At a glance, NCLscan:
+
+- filters out reads that can be explained by canonical co-linear splicing,
+- searches for candidate non-co-linear junctions, and
+- reports high-confidence NCL events across both intragenic and intergenic regions.
 
 The core pipeline combines multiple mapping and filtering stages to remove reads that can be explained by canonical co-linear splicing, and then search for candidate NCL junctions. In the original NCLscan paper, the method was reported to achieve high precision while maintaining a good balance between sensitivity and precision for both **intragenic** and **intergenic** events.
 
