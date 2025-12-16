@@ -3,6 +3,24 @@
 Accurate detection of non-co-linear (NCL) transcripts (fusion, trans-splicing, circRNA) from paired-end RNA-seq
 
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Installation](#installation)
+  - [Prerequisites](#prerequisites)
+  - [Create a conda environment (recommended)](#create-a-conda-environment-recommended)
+  - [Build and install NCLscan](#build-and-install-nclscan)
+- [Quick Start](#quick-start)
+  - [1. Prepare reference files](#1-prepare-reference-files)
+  - [2. Build the NCLscan index](#2-build-the-nclscan-index)
+  - [3. Run NCLscan on a sample](#3-run-nclscan-on-a-sample)
+  - [4. Output overview](#4-output-overview)
+- [Test dataset](#test-dataset)
+- [Legacy / advanced interface](#legacy--advanced-interface)
+- [Citation](#citation)
+- [License](#license)
+
+
 ## Overview
 
 NCLscan is a command-line pipeline for detecting **non-co-linear (NCL) transcripts** from paired-end RNA-seq data. NCL events include gene fusions, trans-splicing events and circular RNAs, where the exon order in the transcript does not follow the linear genomic order. The method was originally introduced in the context of human RNA-seq analysis to distinguish different types of NCL transcripts based on poly(A)+ and non-poly(A) RNA-seq data.
@@ -115,7 +133,7 @@ NCLscan requires four reference files for a given genome build:
 - protein-coding transcript FASTA
 - lncRNA transcript FASTA
 
-These files are **not** bundled with NCLscan. You need to download and prepare them yourself (for example from GENCODE), making sure they are all based on the same genome assembly.
+These files are **not** bundled with NCLscan. You need to download and prepare them yourself (for example from [GENCODE](https://www.gencodegenes.org/)), making sure they are all based on the same genome assembly.
 
 ### 2. Build the NCLscan index
 
